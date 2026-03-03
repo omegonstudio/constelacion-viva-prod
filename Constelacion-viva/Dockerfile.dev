@@ -1,0 +1,26 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Dependencias
+COPY package.json pnpm-lock.yaml* package-lock.json* npm-shrinkwrap.json* ./
+
+RUN \
+  if [ -f pnpm-lock.yaml ]; then \
+    npm install -g pnpm && pnpm install; \
+  elif [ -f package-lock.json ]; then \
+    npm ci; \
+  else \
+    npm install; \
+  fi
+
+# Copiamos el resto
+COPY . .
+
+# ⚠️ IMPORTANTE: DEV como root
+# Next necesita escribir .next
+USER root
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]

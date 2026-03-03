@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: cv_postgres
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: cv_backend
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      ENVIRONMENT: production
+    depends_on:
+      - postgres
+    expose:
+      - "8000"
+    restart: always
+
+  frontend:
+    build:
+      context: ./Constelacion-viva
+      dockerfile: Dockerfile.prod
+    container_name: cv_frontend
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - backend
+    expose:
+      - "3000"
+    restart: always
+
+volumes:
+  postgres_data:

@@ -1,0 +1,36 @@
+# Constelación Viva - Example environment variables
+#
+# Copiá estas variables a tu archivo local `.env` (no se versiona) y completá los valores.
+# Luego recreá containers para que Docker Compose relea el `.env`:
+#   docker compose up -d --force-recreate backend frontend
+#
+
+# -------------------------
+# App / DB
+# -------------------------
+ENVIRONMENT=development
+API_HOST=0.0.0.0
+API_PORT=8000
+FRONTEND_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:8000
+
+DB_USER=postgres
+DB_PASSWORD=postgres
+POSTGRES_PASSWORD=postgres
+DB_NAME=constelacion_viva
+
+# -------------------------
+# Mercado Pago (Membresías - Subscriptions / Preapproval)
+# -------------------------
+MP_ACCESS_TOKEN=TEST-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+MP_WEBHOOK_SECRET=your_mp_webhook_secret
+
+# Public URL for Mercado Pago redirect (back_url). Must be externally reachable (https).
+# Example: an ngrok URL pointing to the frontend (port 3000).
+MP_BACK_URL_BASE= https://apollo-radiative-rod.ngrok-free.dev 
+
+# Aliases legacy (Settings los soporta, pero preferimos MP_*):
+MERCADO_PAGO_ACCESS_TOKEN=
+MERCADO_PAGO_WEBHOOK_TOKEN=
+
+
