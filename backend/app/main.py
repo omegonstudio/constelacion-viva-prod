@@ -28,8 +28,11 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
+        "https://constelacionviva.com",
+        "https://www.constelacionviva.com",
+        "https://constelacionviva.com.ar",
+        "https://www.constelacionviva.com.ar",
+        "https://constelacionviva.com.ar",
     ],
     allow_credentials=True,
     allow_methods=["*"],
