@@ -34,7 +34,7 @@ services:
     depends_on:
       postgres:
         condition: service_started
-    expose:
+    ports:
       - "8000:8000"
     restart: always
     networks:
