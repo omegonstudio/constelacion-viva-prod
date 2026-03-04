@@ -553,7 +553,7 @@ export default function AdminDashboardPage() {
                       <Button type="button" variant="outline" disabled={deleting} onClick={() => setDeleteDialogOpen(false)}>
                         Cancelar
                       </Button>
-                      <Button type="button" variant="destructive" disabled={deleting} onClick={confirmDelete}>
+                      <Button type="button" disabled={deleting} onClick={confirmDelete}>
                         {deleting ? "Eliminando..." : "Eliminar"}
                       </Button>
                     </DialogFooter>

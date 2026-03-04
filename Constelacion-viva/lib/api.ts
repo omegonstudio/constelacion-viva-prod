@@ -41,13 +41,13 @@ export async function apiFetch<T = any>(path: string, options: ApiOptions = {}):
 
   const url = path.startsWith("http") ? path : `${API_BASE_URL}${path}`
 
-  const headers = {
+  const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...(options.headers || {}),
   }
-
-  if (accessToken) {
-    headers["Authorization"] = `Bearer ${accessToken}`
+  
+  if (accessToken && typeof headers === "object" && !Array.isArray(headers)) {
+    ;(headers as Record<string, string>)["Authorization"] = `Bearer ${accessToken}`
   }
 
   const doFetch = async () =>

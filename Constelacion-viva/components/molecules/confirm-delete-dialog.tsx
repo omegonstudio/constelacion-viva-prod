@@ -42,7 +42,7 @@ export function ConfirmDeleteDialog({
           <Button variant="secondary" onClick={onCancel} disabled={loading}>
             Cancelar
           </Button>
-          <Button variant="destructive" onClick={onConfirm} disabled={loading}>
+          <Button variant="cta" onClick={onConfirm} disabled={loading}>
             {loading ? loadingText : confirmText}
           </Button>
         </div>

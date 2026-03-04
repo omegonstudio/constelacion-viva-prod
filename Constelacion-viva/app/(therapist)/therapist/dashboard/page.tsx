@@ -615,7 +615,7 @@ function PhotosSection() {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => handleRemove(photo.id)}>
+                          <Button size="icon" className="h-8 w-8" onClick={() => handleRemove(photo.id)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>

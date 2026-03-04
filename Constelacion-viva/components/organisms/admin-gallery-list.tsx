@@ -104,7 +104,7 @@ export function AdminGalleryList({ refreshSignal, onDeleted }: AdminGalleryListP
             <div className="flex justify-between items-center">
               <div className="font-semibold">{item.title}</div>
               <Button
-                variant="destructive"
+                variant="cta"
                 size="sm"
                 disabled={deleting}
                 onClick={() => {
