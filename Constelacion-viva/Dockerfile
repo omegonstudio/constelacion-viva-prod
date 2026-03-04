@@ -33,10 +33,6 @@ RUN npm run build
 # Stage 3: Runtime
 FROM node:20-alpine AS runner
 
-WORKDIR /app
-
-ENV NODE_ENV=production
-
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
