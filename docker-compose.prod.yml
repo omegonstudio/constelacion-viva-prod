@@ -40,22 +40,22 @@ services:
     networks:
       - constelacion_network
 
-  frontend:
-    build:
-      context: ./Constelacion-viva
-      dockerfile: Dockerfile
-    container_name: cv_frontend
-    env_file:
-      - .env
-    environment:
-      NODE_ENV: production
-    depends_on:
-      - backend
-    expose:
-      - "3000:3000"
-    restart: always
-    networks:
-      - constelacion_network
+frontend:
+  build:
+    context: ./Constelacion-viva
+    dockerfile: Dockerfile
+  container_name: cv_frontend
+  env_file:
+    - .env
+  environment:
+    NODE_ENV: production
+  depends_on:
+    - backend
+  ports:
+    - "3000:3000"
+  restart: always
+  networks:
+    - constelacion_network
 
 volumes:
   postgres_data:
