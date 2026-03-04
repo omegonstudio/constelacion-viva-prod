@@ -13,11 +13,18 @@ services:
     expose:
       - "5432"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - constelacion_network
 
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
     container_name: cv_backend
     env_file:
       - .env
@@ -25,15 +32,18 @@ services:
       DATABASE_URL: postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
       ENVIRONMENT: production
     depends_on:
-      - postgres
+      postgres:
+        condition: service_started
     expose:
       - "8000"
     restart: always
+    networks:
+      - constelacion_network
 
   frontend:
     build:
       context: ./Constelacion-viva
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
     container_name: cv_frontend
     env_file:
       - .env
@@ -44,6 +54,12 @@ services:
     expose:
       - "3000"
     restart: always
+    networks:
+      - constelacion_network
 
 volumes:
   postgres_data:
+
+networks:
+  constelacion_network:
+    driver: bridge
