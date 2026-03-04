@@ -11,7 +11,7 @@
     "build": "next build"
   },
   "dependencies": {
-    "@emotion/is-prop-valid": "latest",
+    "@emotion/is-prop-valid": "1.4.0",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
@@ -33,7 +33,7 @@
     "@radix-ui/react-select": "2.1.4",
     "@radix-ui/react-separator": "1.1.1",
     "@radix-ui/react-slider": "1.2.2",
-    "@radix-ui/react-slot": "latest",
+    "@radix-ui/react-slot": "1.2.4",
     "@radix-ui/react-switch": "1.1.2",
     "@radix-ui/react-tabs": "1.1.2",
     "@radix-ui/react-toast": "1.2.4",
@@ -48,16 +48,16 @@
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
-    "framer-motion": "latest",
+    "framer-motion": "12.23.22",
     "geist": "^1.3.1",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
-    "next": "15.2.4",
+    "next": "14.2.35",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
-    "react": "^19",
+    "react": "18.2.0",
     "react-day-picker": "9.8.0",
-    "react-dom": "^19",
+    "react-dom": "18.2.0",
     "react-hook-form": "^7.60.0",
     "react-resizable-panels": "^2.1.7",
     "recharts": "2.15.4",
@@ -71,11 +71,17 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.9",
     "@types/node": "^22",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "18.2.79",
+    "@types/react-dom": "18.2.25",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "1.3.3",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "overrides": {
+      "lodash": "4.17.23",
+      "tar": "7.5.8"
+    }
   }
 }

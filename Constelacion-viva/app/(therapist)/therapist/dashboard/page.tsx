@@ -157,6 +157,21 @@ function MembershipSection({
 }) {
   
 
+  const redirectToExternal = (rawUrl: string) => {
+    let url: URL
+    try {
+      url = new URL(rawUrl)
+    } catch {
+      throw new Error("URL inválida")
+    }
+    if (url.protocol !== "https:") {
+      throw new Error("URL insegura (solo HTTPS)")
+    }
+    // Optional hardening: enforce an allowlist of payment providers.
+    // e.g. check url.hostname endsWith("mercadopago.com") or "mpago.la"
+    window.location.assign(url.toString())
+  }
+
   const handlePayment = async () => {
     if (loading) return
   
@@ -166,7 +181,7 @@ function MembershipSection({
         throw new Error("No se pudo iniciar el pago")
       }
   
-      window.location.href = url
+      redirectToExternal(url)
     } catch (err: any) {
       console.error(err)
       toast.error(err.message || "Error al iniciar el pago")

@@ -16,8 +16,8 @@ function resolveRedirect(role: Role) {
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState("admin@local.dev")
-  const [password, setPassword] = useState("admin12345!")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
