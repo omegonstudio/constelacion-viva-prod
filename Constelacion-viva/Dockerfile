@@ -22,7 +22,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Build arguments for environment variables
-ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+ARG NEXT_PUBLIC_API_URL=https://constelacionviva.com/api
 
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
     NODE_ENV=production

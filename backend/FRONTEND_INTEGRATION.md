@@ -528,5 +528,5 @@ interface LessonProgress {
 ## Environment Variables (Frontend)
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=https://constelacionviva.com/api
 ```

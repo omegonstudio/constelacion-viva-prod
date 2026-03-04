@@ -12,7 +12,7 @@ ENVIRONMENT=development
 API_HOST=0.0.0.0
 API_PORT=8000
 FRONTEND_URL=http://localhost:3000
-NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=https://constelacionviva.com/api
 
 DB_USER=postgres
 DB_PASSWORD=postgres
