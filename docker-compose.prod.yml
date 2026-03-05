@@ -34,7 +34,7 @@ services:
       postgres:
         condition: service_started
     ports:
-      - "8000:8000"
+      - "8000"
     restart: always
     networks:
       - constelacion_network
@@ -51,7 +51,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "3000:3000"
+      - "3000"
     restart: always
     networks:
       - constelacion_network
