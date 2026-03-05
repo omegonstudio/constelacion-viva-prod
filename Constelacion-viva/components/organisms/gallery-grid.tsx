@@ -39,14 +39,14 @@ export function GalleryGrid() {
         <FilterTabs activeFilter={activeFilter} onFilterChange={setActiveFilter} />
 
         <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-          {loading && (
+      {/*     {loading && (
             <div className="col-span-full text-center text-white/70 font-sans">Cargando galería…</div>
           )}
           {error && (
             <div className="col-span-full text-center text-red-200 font-sans">
               No pudimos cargar la galería. Intenta nuevamente.
             </div>
-          )}
+          )} */}
           <AnimatePresence mode="popLayout">
             {filteredItems.map((item) => (
               <motion.div
