@@ -3,10 +3,11 @@ name: Deploy CONSTELACIÓN VIVA (PROD)
 on:
   push:
     branches: [ main ]
+
   workflow_dispatch:
     inputs:
       rollback_commit:
-        description: "Commit hash opcional para rollback"
+        description: "Commit hash para rollback (opcional)"
         required: false
         default: ""
 
@@ -14,13 +15,15 @@ concurrency:
   group: constelacion-viva-prod
   cancel-in-progress: true
 
+
 jobs:
 
-# =====================================
-# 1️⃣ BUILD (FRONT + BACK)
-# =====================================
+# =================================
+# BUILD
+# =================================
 
   build:
+
     runs-on: ubuntu-latest
 
     steps:
@@ -28,7 +31,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # ---------- FRONTEND ----------
+
+# --------------------------
+# FRONTEND
+# --------------------------
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -48,7 +54,10 @@ jobs:
         working-directory: Constelacion-viva
         run: pnpm build
 
-      # ---------- BACKEND ----------
+
+# --------------------------
+# BACKEND
+# --------------------------
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -65,20 +74,25 @@ jobs:
         working-directory: backend
         env:
           TESTING: "1"
-        run: pytest || true
+        run: |
+          pytest || true
 
 
-# =====================================
-# 2️⃣ DEPLOY
-# =====================================
+
+# =================================
+# DEPLOY
+# =================================
 
   deploy-prod:
+
     runs-on: ubuntu-latest
     needs: build
 
     steps:
 
-      # ---------- SSH KEY ----------
+# --------------------------
+# PREPARAR SSH
+# --------------------------
 
       - name: Preparar SSH
         run: |
@@ -86,38 +100,78 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-      # ---------- HOST VERIFICATION ----------
+
+# --------------------------
+# HOST KEY
+# --------------------------
 
       - name: Add droplet to known_hosts
         run: |
-          ssh-keyscan -H ${{ secrets.DROPLET_IP }} >> ~/.ssh/known_hosts
+          mkdir -p ~/.ssh
+          ssh-keyscan ${{ secrets.DROPLET_IP }} >> ~/.ssh/known_hosts
 
-      # ---------- DEPLOY ----------
+
+# --------------------------
+# TEST SSH
+# --------------------------
+
+      - name: Test SSH connection
+        run: |
+          ssh \
+          -i ~/.ssh/id_ed25519 \
+          -o UserKnownHostsFile=~/.ssh/known_hosts \
+          deploy@${{ secrets.DROPLET_IP }} "echo SSH OK"
+
+
+# --------------------------
+# DEPLOY
+# --------------------------
 
       - name: Deploy en Droplet
         run: |
-          ssh -i ~/.ssh/id_ed25519 \
+
+          ssh \
+          -i ~/.ssh/id_ed25519 \
           -o UserKnownHostsFile=~/.ssh/known_hosts \
-          -o StrictHostKeyChecking=yes \
           deploy@${{ secrets.DROPLET_IP }} << 'EOF'
 
+          echo "=============================="
           echo "🚀 DEPLOY CONSTELACIÓN VIVA"
+          echo "=============================="
 
           DIR="/opt/apps/constelacion-viva-prod"
           BRANCH="main"
-          COMPOSE="docker-compose.prod.yml"
 
           cd "$DIR"
 
-          git fetch origin
-          git reset --hard origin/$BRANCH
+          echo "→ Actualizando repo"
 
-          docker compose -f "$COMPOSE" up -d --build --remove-orphans
+          if [ -n "${{ github.event.inputs.rollback_commit }}" ]; then
+            echo "⚠️ ROLLBACK a ${{ github.event.inputs.rollback_commit }}"
+            git fetch origin
+            git reset --hard "${{ github.event.inputs.rollback_commit }}"
+          else
+            git fetch origin
+            git reset --hard origin/$BRANCH
+          fi
 
-          docker compose -f "$COMPOSE" ps
+          echo "→ Rebuild containers"
+
+          docker compose up -d --build --remove-orphans
+
+
+          echo ""
+          echo "→ Estado contenedores"
+          docker compose ps
+
+
+          echo ""
+          echo "→ Health check backend"
 
           docker exec cv_backend curl -s http://localhost:8000/api/health || true
 
-          echo "✅ DEPLOY OK"
+
+          echo ""
+          echo "✅ DEPLOY COMPLETADO"
 
           EOF
