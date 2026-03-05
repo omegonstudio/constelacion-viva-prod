@@ -18,7 +18,7 @@ const teamMembers = [
     designation: "Desarrollador - Co Founder",
     image: "/Tito.png",
   },
-  {
+/*   {
     id: 3,
     name: "Camila Faliani",
     designation: "Coordinadora de Proyectos",
@@ -29,7 +29,7 @@ const teamMembers = [
     name: "Mar Marquez",
     designation: "Social Media Manager",
     image: "/MAR.webp",
-  },
+  }, */
 ];
 
 export function AboutTeam() {
