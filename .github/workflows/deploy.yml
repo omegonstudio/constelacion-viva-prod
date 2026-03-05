@@ -96,11 +96,12 @@ jobs:
 
       - name: Deploy en Droplet
         run: |
-          ssh -i ~/.ssh/id_ed25519 deploy@${{ secrets.DROPLET_IP }} << 'EOF'
+          ssh -i ~/.ssh/id_ed25519 \
+          -o UserKnownHostsFile=~/.ssh/known_hosts \
+          -o StrictHostKeyChecking=yes \
+          deploy@${{ secrets.DROPLET_IP }} << 'EOF'
 
-          echo "=============================="
           echo "🚀 DEPLOY CONSTELACIÓN VIVA"
-          echo "=============================="
 
           DIR="/opt/apps/constelacion-viva-prod"
           BRANCH="main"
@@ -108,38 +109,15 @@ jobs:
 
           cd "$DIR"
 
-          # ---------- ROLLBACK ----------
-
-          if [ -n "${{ github.event.inputs.rollback_commit }}" ]; then
-            echo "⚠️ ROLLBACK a ${{ github.event.inputs.rollback_commit }}"
-            git fetch origin
-            git reset --hard "${{ github.event.inputs.rollback_commit }}"
-          else
-            echo "Guardando commit previo"
-            git rev-parse --short HEAD > .last_deploy_commit || true
-
-            echo "Actualizando repo"
-            git fetch origin
-            git reset --hard origin/$BRANCH
-          fi
-
-          # ---------- BUILD DOCKER ----------
-
-          echo "🐳 Rebuild containers"
+          git fetch origin
+          git reset --hard origin/$BRANCH
 
           docker compose -f "$COMPOSE" up -d --build --remove-orphans
 
-          # ---------- STATUS ----------
-
-          echo ""
-          echo "📦 Containers"
           docker compose -f "$COMPOSE" ps
 
-          echo ""
-          echo "🩺 Backend health"
           docker exec cv_backend curl -s http://localhost:8000/api/health || true
 
-          echo ""
-          echo "✅ DEPLOY COMPLETADO"
+          echo "✅ DEPLOY OK"
 
           EOF
