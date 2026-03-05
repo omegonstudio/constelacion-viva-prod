@@ -30,17 +30,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
-          cache-dependency-path: Constelacion-viva/pnpm-lock.yaml
 
-      - name: Install pnpm
-        run: npm install -g pnpm
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
 
       - name: Install frontend deps
         working-directory: Constelacion-viva
         run: pnpm install --frozen-lockfile
 
-      - name: Build Next.js frontend
+      - name: Build frontend
         working-directory: Constelacion-viva
         run: pnpm build
 
