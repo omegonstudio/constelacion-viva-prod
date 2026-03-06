@@ -220,7 +220,7 @@
 
 ### .env.example
 
-- [x] Database section (DB_USER, DB_PASSWORD, DB_NAME)
+- [x] Database section (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, DATABASE_URL)
 - [x] Backend section (SECRET_KEY, ENVIRONMENT, API_HOST, API_PORT)
 - [x] Frontend section (FRONTEND_URL, FRONTEND_API_URL)
 - [x] AWS S3 section (BUCKET, REGION, KEYS, ENDPOINT)

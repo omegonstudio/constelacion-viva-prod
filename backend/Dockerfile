@@ -39,12 +39,14 @@ COPY --from=builder /tmp/wheels /tmp/wheels
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache /tmp/wheels/*
+RUN pip install --no-cache-dir /tmp/wheels/*
 
 # Copy application code
 COPY app/ ./app/
 COPY migrations/ ./migrations/
 COPY manage.py run.py ./
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Change ownership to appuser
 RUN chown -R appuser:appuser /app
@@ -58,6 +60,9 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 
 # Expose port
 EXPOSE 8000
+
+# Wait for DB + run migrations, then exec CMD
+ENTRYPOINT ["/entrypoint.sh"]
 
 # Run uvicorn with production settings
 CMD ["python", "-m", "uvicorn", "app.main:app", \

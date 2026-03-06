@@ -1,3 +1,5 @@
+import os
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 from typing import Literal, Optional
@@ -5,7 +7,7 @@ from typing import Literal, Optional
 
 class Settings(BaseSettings):
     # Database
-    database_url: str
+    database_url: str = Field(default_factory=lambda: os.getenv("DATABASE_URL", ""))
     
     # JWT
     secret_key: str
@@ -30,8 +32,8 @@ class Settings(BaseSettings):
     mercado_pago_access_token: str = ""
     mercado_pago_webhook_token: str = ""
     # Alias names requested for Objetivo 2
-    mp_access_token: str = "TEST-5338563808741561-020612-8928482fca71640fd97a61d8ed034d2d-128502761"
-    mp_webhook_secret: str = "94124eb68ceea0f4571eedee77429dfe8353a48fd9bc94d9a89a426ef030daf0"
+    mp_access_token: str = ""
+    mp_webhook_secret: str = ""
     
     # Email
     resend_api_key: str = ""
@@ -47,6 +49,13 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+
+    @field_validator("database_url")
+    @classmethod
+    def _database_url_required(cls, v: str) -> str:
+        if not v:
+            raise ValueError("DATABASE_URL is required")
+        return v
 
 
 @lru_cache()

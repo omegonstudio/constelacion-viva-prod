@@ -14,10 +14,13 @@ API_PORT=8000
 FRONTEND_URL=http://localhost:3000
 NEXT_PUBLIC_API_URL=https://constelacionviva.com/api
 
-DB_USER=postgres
-DB_PASSWORD=postgres
+# Postgres container credentials (used by the `postgres` service)
+POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
-DB_NAME=constelacion_viva
+POSTGRES_DB=constelacion_viva
+
+# Single source of truth for the application DB connection (used by backend + Alembic)
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/constelacion_viva
 
 # -------------------------
 # Mercado Pago (Membresías - Subscriptions / Preapproval)

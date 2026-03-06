@@ -5,6 +5,7 @@ from sqlalchemy import pool
 from alembic import context
 import os
 import sys
+from urllib.parse import urlparse, urlunparse
 
 # Add app directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -19,11 +20,29 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Set SQLAlchemy URL from environment
-if not config.get_main_option("sqlalchemy.url"):
-    from app.core.config import get_settings
-    settings = get_settings()
-    config.set_main_option("sqlalchemy.url", settings.database_url)
+def _to_sync_sqlalchemy_url(database_url: str) -> str:
+    """
+    Alembic must use a **sync** SQLAlchemy URL.
+
+    Runtime uses async URLs like:
+      postgresql+asyncpg://user:pass@host:5432/db
+    For Alembic we convert to a sync driver URL:
+      postgresql://user:pass@host:5432/db
+    """
+    if database_url.startswith("postgresql+asyncpg://"):
+        # Keep everything after the scheme untouched (including credentials/host/path/query)
+        parsed = urlparse(database_url)
+        parsed = parsed._replace(scheme="postgresql")
+        return urlunparse(parsed)
+    return database_url
+
+
+# Single source of truth: DATABASE_URL from environment (no hardcoding).
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is not set (required for Alembic migrations)")
+
+config.set_main_option("sqlalchemy.url", _to_sync_sqlalchemy_url(DATABASE_URL))
 
 target_metadata = Base.metadata
 
