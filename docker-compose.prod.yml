@@ -41,6 +41,9 @@ services:
     build:
       context: ./Constelacion-viva
       dockerfile: Dockerfile
+      args:
+        # Next.js "NEXT_PUBLIC_*" vars are baked at build time. Keep build arg in sync with `.env`.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     container_name: cv_frontend
     env_file:
       - .env
