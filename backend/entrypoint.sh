@@ -42,9 +42,11 @@ echo "🔧 Running Alembic migrations..."
 alembic -c migrations/alembic.ini upgrade head
 echo "✅ Migrations done"
 
-if [ "${RUN_SEED:-0}" = "1" ]; then
-  echo "🌱 Running seed (idempotent)..."
-  python -m app.scripts.seed || true
+if [ "${DISABLE_SEED:-false}" = "true" ]; then
+  echo "ℹ Database seed disabled (DISABLE_SEED=true)"
+else
+  echo "🌱 Running database seed..."
+  python -c "from app.db.seed import seed_database; seed_database()"
 fi
 
 echo "🚀 Starting API"
