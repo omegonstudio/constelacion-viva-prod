@@ -108,7 +108,7 @@ jobs:
       - name: Add droplet to known_hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan ${{ secrets.DROPLET_IP }} >> ~/.ssh/known_hosts
+          # ssh-keyscan ${{ secrets.DROPLET_IP }} >> ~/.ssh/known_hosts
 
 
 # --------------------------
@@ -119,7 +119,7 @@ jobs:
         run: |
           ssh \
           -i ~/.ssh/id_ed25519 \
-          -o UserKnownHostsFile=~/.ssh/known_hosts \
+          -o StrictHostKeyChecking=no \
           deploy@${{ secrets.DROPLET_IP }} "echo SSH OK"
 
 
@@ -132,8 +132,10 @@ jobs:
 
           ssh \
           -i ~/.ssh/id_ed25519 \
-          -o UserKnownHostsFile=~/.ssh/known_hosts \
+          -o StrictHostKeyChecking=no \
           deploy@${{ secrets.DROPLET_IP }} << 'EOF'
+
+          set -e
 
           echo "=============================="
           echo "🚀 DEPLOY CONSTELACIÓN VIVA"
@@ -155,23 +157,31 @@ jobs:
             git reset --hard origin/$BRANCH
           fi
 
+          echo ""
           echo "→ Rebuild containers"
 
           docker compose up -d --build --remove-orphans
 
-
           echo ""
           echo "→ Estado contenedores"
+
           docker compose ps
 
+          echo ""
+          echo "→ Esperando backend"
+
+          sleep 5
 
           echo ""
           echo "→ Health check backend"
 
-          docker exec cv_backend curl -s http://localhost:8000/api/health || true
-
+          docker exec cv_backend curl -f http://localhost:8000/api/health
 
           echo ""
           echo "✅ DEPLOY COMPLETADO"
 
           EOF
+
+      - name: Smoke test API
+        run: |
+          curl -fv https://constelacionviva.com/api/health
