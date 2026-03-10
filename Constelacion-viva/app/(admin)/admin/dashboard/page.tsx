@@ -379,7 +379,7 @@ export default function AdminDashboardPage() {
                       Subir contenido
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="border-border bg-card sm:max-w-[425px]">
+                  <DialogContent className="border-border bg-black sm:max-w-[425px]">
                     <DialogHeader>
                       <DialogTitle className="text-foreground">Subir nuevo contenido</DialogTitle>
                       <DialogDescription>Añade una nueva imagen o video a la galería pública.</DialogDescription>

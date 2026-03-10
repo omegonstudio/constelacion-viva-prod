@@ -145,7 +145,12 @@ def create_presigned_upload(
         Params={
             "Bucket": settings.s3_bucket,
             "Key": key,
-            "ContentType": content_type,
+            # ContentType is intentionally excluded from signed params.
+            # Including it forces "content-type" into X-Amz-SignedHeaders,
+            # which causes 403 when the browser value differs even slightly
+            # (e.g. empty file.type, browser normalization).
+            # The browser still sends Content-Type in the PUT request and
+            # DigitalOcean Spaces uses it to set the object's content type.
         },
         ExpiresIn=expires_in,
     )
