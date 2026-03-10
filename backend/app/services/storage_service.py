@@ -33,15 +33,40 @@ def validate_s3_config(settings: Settings) -> None:
         raise S3NotConfiguredError("S3 configuration is incomplete (dev LocalStack expected).")
 
 
+def _is_virtual_hosted(settings: Settings) -> bool:
+    """
+    Return True when s3_public_endpoint already has the bucket name in the domain,
+    e.g. https://constelacion-viva-prod.sfo3.digitaloceanspaces.com
+
+    This drives addressing_style for boto3:
+      - virtual → bucket in domain, key in path  (DigitalOcean Spaces production)
+      - path    → /bucket/key                    (LocalStack dev)
+    """
+    base = settings.s3_public_endpoint or settings.s3_endpoint or ""
+    netloc = urlparse(base).netloc
+    return bool(settings.s3_bucket and netloc.startswith(f"{settings.s3_bucket}."))
+
+
 def get_s3_client(settings: Settings):
-    """Create boto3 client (LocalStack-compatible)."""
+    """
+    Create boto3 client.
+
+    - Production (DO Spaces virtual-hosted): addressing_style=virtual
+      boto3 prepends bucket to the endpoint domain and the key has no bucket prefix.
+    - Dev (LocalStack path-style): addressing_style=path
+      boto3 appends /bucket/key to the endpoint URL (existing behaviour).
+    """
+    from botocore.config import Config
+
     validate_s3_config(settings)
+    addressing_style = "virtual" if _is_virtual_hosted(settings) else "path"
     return boto3.client(
         "s3",
         region_name=settings.s3_region,
         aws_access_key_id=settings.s3_access_key,
         aws_secret_access_key=settings.s3_secret_key,
         endpoint_url=settings.s3_endpoint,
+        config=Config(s3={"addressing_style": addressing_style}),
     )
 
 
@@ -54,9 +79,19 @@ def ensure_bucket_exists(client, bucket: str):
 
 
 def build_public_url(settings: Settings, key: str) -> str:
-    """Generate public-ish URL (LocalStack uses endpoint + bucket + key)."""
+    """
+    Build the public URL for an uploaded object.
+
+    - Virtual-hosted (DO Spaces): bucket already in domain → base/key
+      e.g. https://constelacion-viva-prod.sfo3.digitaloceanspaces.com/gallery/uuid.jpg
+    - Path-style (LocalStack dev): base/bucket/key
+      e.g. http://localhost:4566/constelacion-viva-prod/gallery/uuid.jpg
+    """
     base = settings.s3_public_endpoint or settings.s3_endpoint or ""
-    return f"{base.rstrip('/')}/{settings.s3_bucket}/{key}"
+    base = base.rstrip("/")
+    if _is_virtual_hosted(settings):
+        return f"{base}/{key}"
+    return f"{base}/{settings.s3_bucket}/{key}"
 
 def rewrite_presigned_url_base(upload_url: str, internal_base: str | None, public_base: str | None) -> str:
     """
@@ -164,12 +199,24 @@ def create_presigned_upload(
 def delete_file_from_public_url(settings: Settings, url: str) -> bool:
     """
     Delete S3 object given its public URL.
-    Works with LocalStack-style URLs.
+
+    Handles both URL styles:
+    - Virtual-hosted: https://bucket.region.digitaloceanspaces.com/gallery/uuid.jpg
+      → key = "gallery/uuid.jpg"
+    - Path-style (LocalStack): http://localhost:4566/bucket/gallery/uuid.jpg
+      → key = "gallery/uuid.jpg"
     """
     parsed = urlparse(url)
-    path = parsed.path.lstrip("/")
 
-    # esperado: /<bucket>/<key>
+    # Virtual-hosted style: bucket is part of the domain, not the path.
+    if settings.s3_bucket and parsed.netloc.startswith(f"{settings.s3_bucket}."):
+        key = parsed.path.lstrip("/")
+        if not key:
+            return False
+        return delete_file(settings, key)
+
+    # Path-style: /{bucket}/{key}
+    path = parsed.path.lstrip("/")
     parts = path.split("/", 1)
     if len(parts) != 2:
         return False
