@@ -100,7 +100,8 @@ export function useGallery() {
       body: file,
       headers: {
         "Content-Type": file.type,
-      },
+        "x-amz-acl": "public-read",
+      }
     })
     if (!uploadResponse.ok) {
       throw new Error(`Error subiendo a S3 (status ${uploadResponse.status})`)

@@ -180,6 +180,7 @@ def create_presigned_upload(
         Params={
             "Bucket": settings.s3_bucket,
             "Key": key,
+            "ACL": "public-read",
             # ContentType is intentionally excluded from signed params.
             # Including it forces "content-type" into X-Amz-SignedHeaders,
             # which causes 403 when the browser value differs even slightly
