@@ -1,5 +1,6 @@
 """Auth routes: register, login, refresh."""
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.services.auth_service import AuthService
@@ -30,14 +31,21 @@ async def register(
     return tokens
 
 
-def _set_refresh_cookie(response: Response, refresh_token: str):
+def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
+    """Set the httpOnly refresh-token cookie.
+
+    The Secure flag is enabled automatically in production so the cookie is
+    only transmitted over HTTPS. In development (LocalStack / Docker) it stays
+    False to allow plain-HTTP local testing.
+    """
+    secure = settings.environment == "production"
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
         samesite="lax",
-        secure=False,  # dev only
-        max_age=7 * 24 * 60 * 60,  # align with refresh expiry
+        secure=secure,
+        max_age=7 * 24 * 60 * 60,  # 7 days — aligned with token expiry
         path="/",
     )
 
@@ -56,21 +64,28 @@ async def login(
     return tokens
 
 
-@router.post("/refresh", response_model=TokenResponse)
+@router.post("/refresh")
 async def refresh(
     request: Request,
-    db: AsyncSession = Depends(get_db)
-) -> TokenResponse:
-    """Refresh access token using refresh_token cookie."""
+    db: AsyncSession = Depends(get_db),
+) -> JSONResponse:
+    """Refresh access token using the httpOnly refresh_token cookie.
+
+    Returns a proper JSON body with the new access_token so the frontend
+    can store it, and rotates the refresh_token cookie.
+    """
     refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token missing")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token missing",
+        )
+
     tokens = await AuthService.refresh_token_from_str(db, refresh_token)
-    response = Response()
-    _set_refresh_cookie(response, tokens.refresh_token)
-    response.media_type = "application/json"
-    response.body = tokens.model_dump_json().encode()
-    return response
+
+    resp = JSONResponse(content=tokens.model_dump())
+    _set_refresh_cookie(resp, tokens.refresh_token)
+    return resp
 
 
 @router.get("/me", response_model=UserResponse)
@@ -84,8 +99,7 @@ async def auth_me(user: User = Depends(get_current_user)) -> UserResponse:
 
 
 @router.post("/logout")
-async def logout() -> dict:
+async def logout(response: Response) -> dict:
     """Clear refresh token cookie (stateless logout)."""
-    response = Response(content='{"message":"logged out"}', media_type="application/json")
     response.delete_cookie(key="refresh_token", path="/")
-    return response
+    return {"message": "logged out"}

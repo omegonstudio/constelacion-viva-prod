@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { fetchMe, logout as logoutHelper, MeResponse } from "@/lib/auth"
+import { fetchMe, logout as logoutHelper, bootstrapSession, MeResponse } from "@/lib/auth"
 import { getAccessToken } from "@/lib/api"
 
 interface UseAuthResult {
@@ -19,9 +19,21 @@ export function useAuth(): UseAuthResult {
 
   useEffect(() => {
     let cancelled = false
-    const load = async () => {
+
+    async function initAuth() {
       try {
-        const me = await fetchMe("")
+        const token = getAccessToken()
+
+        if (!token) {
+          // No token in memory or sessionStorage (e.g. browser was closed and
+          // reopened). Attempt a silent refresh using the httpOnly cookie before
+          // making any authenticated request.
+          const refreshed = await bootstrapSession()
+          if (!refreshed) throw new Error("No session")
+        }
+
+        const me = await fetchMe()
+
         if (!cancelled) {
           setUser(me)
         }
@@ -37,7 +49,7 @@ export function useAuth(): UseAuthResult {
       }
     }
 
-    load()
+    initAuth()
     return () => {
       cancelled = true
     }

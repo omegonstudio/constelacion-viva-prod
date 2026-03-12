@@ -1,4 +1,4 @@
-import { API_BASE_URL, setAccessToken, clearAccessToken, apiFetch, getAccessToken } from "@/lib/api"
+import { API_BASE_URL, setAccessToken, clearAccessToken, apiFetch } from "@/lib/api"
 
 export interface LoginResponse {
   access_token: string
@@ -40,12 +40,10 @@ export async function login(email: string, password: string): Promise<LoginRespo
   return data as LoginResponse
 }
 
-export async function fetchMe(token: string): Promise<MeResponse> {
-  const current = token || getAccessToken()
-  if (!current) {
-    throw new Error("No hay token disponible")
-  }
-  return apiFetch<MeResponse>("/auth/me", { headers: { Authorization: `Bearer ${current}` } })
+export async function fetchMe(): Promise<MeResponse> {
+  // apiFetch injects the Authorization header automatically via getAccessToken()
+  // and will trigger the refresh flow on 401 if the cookie is present.
+  return apiFetch<MeResponse>("/auth/me")
 }
 
 export async function backendLogout() {
@@ -55,5 +53,38 @@ export async function backendLogout() {
     credentials: "include",
   })
   clearAccessToken()
+}
+
+/**
+ * Attempt to restore a session silently using the httpOnly refresh_token cookie.
+ *
+ * Called on app boot when no access token is present in memory or sessionStorage
+ * (e.g. browser was closed and reopened). Returns true and stores the new
+ * access token if the cookie is still valid; returns false otherwise.
+ *
+ * Does NOT throw — callers can treat a false return as "no session available".
+ */
+export async function bootstrapSession(): Promise<boolean> {
+  if (!API_BASE_URL) return false
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+    })
+
+    if (!res.ok) return false
+
+    const data = await res.json()
+
+    if (data?.access_token) {
+      setAccessToken(data.access_token)
+      return true
+    }
+
+    return false
+  } catch {
+    return false
+  }
 }
 

@@ -21,16 +21,20 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleFetchMe = useCallback(async (accessToken: string) => {
-    const me = await fetchMe(accessToken)
+  // fetchMe() reads the token from getAccessToken() which is already set by
+  // setAccessToken() before this callback runs, so no parameter is needed.
+  const handleFetchMe = useCallback(async () => {
+    const me = await fetchMe()
     const destination = resolveRedirect(me.role)
     router.push(destination)
   }, [router])
 
   useEffect(() => {
+    // If a valid token is already in sessionStorage (e.g. after page reload),
+    // attempt to restore the session without requiring the user to log in again.
     const current = getAccessToken()
     if (current) {
-      handleFetchMe(current).catch(() => {
+      handleFetchMe().catch(() => {
         logout()
       })
     }
@@ -45,7 +49,7 @@ export default function LoginPage() {
       const res = await login(email, password)
       if (res.access_token) {
         setAccessToken(res.access_token)
-        await handleFetchMe(res.access_token)
+        await handleFetchMe()
       }
     } catch (err) {
       setError((err as Error).message || "No se pudo iniciar sesión")

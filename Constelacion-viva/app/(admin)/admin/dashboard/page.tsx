@@ -426,7 +426,7 @@ export default function AdminDashboardPage() {
                           <SelectTrigger className="border-border bg-input text-foreground">
                             <SelectValue placeholder="Seleccionar tipo" />
                           </SelectTrigger>
-                          <SelectContent className="border-border bg-card">
+                          <SelectContent className="border-border bg-black">
                             <SelectItem value="image">Imagen</SelectItem>
                             <SelectItem value="video">Video</SelectItem>
                           </SelectContent>
@@ -440,7 +440,7 @@ export default function AdminDashboardPage() {
                           <SelectTrigger className="border-border bg-input text-foreground">
                             <SelectValue placeholder="Seleccionar categoría" />
                           </SelectTrigger>
-                          <SelectContent className="border-border bg-card">
+                          <SelectContent className="border-border bg-black">
                             <SelectItem value="eventos">Eventos</SelectItem>
                             <SelectItem value="terapeutas">Terapeutas</SelectItem>
                           </SelectContent>
